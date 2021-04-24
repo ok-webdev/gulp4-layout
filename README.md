@@ -1,9 +1,10 @@
-# Gulp4 for layout
+# Gulp4 for layout without build mode
 
 ## Inside:
 - browser-sync
 - gulp-concat
 - gulp-uglify-es
+- gulp-htmlmin
 - gulp-sass
 - gulp-autoprefixer
 - gulp-clean-css
@@ -17,9 +18,6 @@ nmp i - install dependencies
 ````
 ````bash
 gulp - default dev mode
-````
-````bash
-gulp build - generate dist
 ````
 ````bash
 gulp cleandist - delete dist folder

@@ -9,13 +9,14 @@ const imagemin = require('gulp-imagemin');
 const newer = require('gulp-newer');
 const del = require('del')
 const babel = require('gulp-babel');
+const htmlmin = require('gulp-htmlmin');
 
 function browsersync() {
   browserSync.init({
     server: {
-      baseDir: "./src/",
+      baseDir: "./dist/",
     },
-    notify: false,
+    notify: true,
     online: true,
   });
 }
@@ -27,7 +28,7 @@ function scripts() {
   }))
   .pipe(concat("main.min.js"))
   .pipe(uglify())
-  .pipe(dest('./src/js/'))
+  .pipe(dest('./dist/js/'))
   .pipe(browserSync.stream());
 }
 
@@ -39,19 +40,40 @@ function styles() {
     overrideBrowserslist: ['last 10 versions'], grid: true
   }))
   .pipe(cleancss(({level: {1: {cpecialComments: 0}}})))
-  .pipe(dest('./src/css/'))
+  .pipe(dest('./dist/css/'))
   .pipe(browserSync.stream());
 }
 
 function images() {
-  return src('src/assets/images/*.*')
-  .pipe(newer('src/assets/images/dest'))
+  return src('src/assets/images/*.{jpeg, jpg, png, svg}')
+  .pipe(newer('dist/assets/images/'))
   .pipe(imagemin())
-  .pipe(dest('src/assets/images/dest'))
+  .pipe(dest('dist/assets/images/'))
+}
+
+function html() {
+  return src('./src/**/*.html')
+  .pipe(htmlmin({
+    collapseWhitespace: true,
+    removeComments: true
+    }
+  ))
+  .pipe(dest('./dist/'))
+  .pipe(browserSync.stream())
+}
+
+function fonts () {
+  return src('./src/assets/fonts/*.*')
+  .pipe(dest('./dist/assets/fonts/'));
+}
+
+function favicon () {
+  return src ('./src/assets/favicon/*.*')
+  .pipe(dest('./dist/assets/favicon/'));
 }
 
 function cleanimages () {
-  return del('src/assets/images/dest/**/*', {force: true});
+  return del('dist/assets/images/**/*', {force: true});
 }
 
 function cleandist () {
@@ -59,20 +81,10 @@ function cleandist () {
 }
 
 function startWatch() {
+  watch('src/**/*.html').on('change', html, browserSync.reload);
   watch(['src/**/sass/**/*'], styles);
   watch(['src/**/*.js', '!src/**/*.min.js'], scripts);
-  watch('src/**/*.html').on('change', browserSync.reload);
-  watch('src/assets/images/');
-}
-
-function buildcopy() {
-  return src([
-    'src/css/**/*.min.css',
-    'src/js/**/*.min.js',
-    'src/assets/images/dest/**/*',
-    'src/**/*.html',
-  ], {base: 'src'})
-  .pipe(dest('dist/'))
+  watch('src/assets/');
 }
 
 exports.browsersync = browsersync;
@@ -81,6 +93,8 @@ exports.styles = styles;
 exports.images = images;
 exports.cleanimages = cleanimages;
 exports.cleandist = cleandist;
-exports.build = series(cleandist, styles, scripts, images, buildcopy);
+exports.html = html;
+exports.fonts = fonts;
+exports.favicon = favicon;
 
-exports.default = parallel(scripts, styles, browsersync, startWatch)
+exports.default = parallel(html, fonts, favicon, scripts, styles, images, browsersync, startWatch);
