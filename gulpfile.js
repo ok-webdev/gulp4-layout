@@ -45,10 +45,10 @@ function styles() {
 }
 
 function images() {
-  return src('src/assets/images/*.{jpeg, jpg, png, svg}')
+  return src('src/assets/images/**/*')
   .pipe(newer('dist/assets/images/'))
   .pipe(imagemin())
-  .pipe(dest('dist/assets/images/'))
+  .pipe(dest('./dist/assets/images/'))
 }
 
 function html() {
@@ -97,4 +97,6 @@ exports.html = html;
 exports.fonts = fonts;
 exports.favicon = favicon;
 
-exports.default = parallel(html, fonts, favicon, scripts, styles, images, browsersync, startWatch);
+exports.default = parallel(fonts, favicon, scripts, styles, images, browsersync, html, startWatch);
+
+exports.build = series(cleandist, fonts, favicon, scripts, styles, images, html) 
